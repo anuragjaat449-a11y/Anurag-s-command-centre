@@ -87,7 +87,7 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="relative mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Plan Start", value: "21 Jun 2026" },
-            { label: "Target Date", value: "07 Dec 2025" },
+            { label: "Target Date", value: "06 Dec 2026" },
             { label: "Total Weeks", value: "24 Weeks" },
             { label: "Study Streak", value: `${state.streak} Days 🔥` }
           ].map((item, idx) => (
@@ -211,32 +211,30 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           {[
             {
-              title: "🌅 Block 1: Morning Block",
+              title: "🌅 Block 1",
               color: "#00d4ff",
               rules: [
-                "Time: 6:00 AM – 8:00 AM",
-                "Day A: Physics | Day B: Math",
+                "Day A: Physics | Day B: Chemistry",
                 "Phase 1: 1 lecture per block",
-                "Phase 2: 2 lectures per block (Phy & Math)"
+                "Phase 2: 2 lectures (Physics) / 1 lecture (Chemistry)"
               ]
             },
             {
-              title: "☀️ Block 2: Midday Block",
+              title: "☀️ Block 2",
               color: "#00e5a0",
               rules: [
-                "Time: 12:00 PM onwards",
-                "Day A: Chemistry | Day B: English/Hindi",
-                "Chemistry is always 1 lecture per session",
-                "Language is 45 mins max (Phase 2 onwards)"
+                "Day A: Math | Day B: Math",
+                "Phase 1: 1 lecture per block",
+                "Phase 2: 2 lectures per block"
               ]
             },
             {
               title: "📅 Weekly Structure",
               color: "#ff6b9d",
               rules: [
-                "Monday–Thursday: Focused Core study lectures",
+                "Monday–Thursday: Core study lectures",
                 "Friday: 1 new lecture + Spaced Recall (Phy/Chem)",
-                "Saturday: 1 new lecture + Spaced Recall (Math/Lang)",
+                "Saturday: 1 new lecture + Spaced Recall (Math)",
                 "Sunday: Complete rest day. Zero study."
               ]
             },

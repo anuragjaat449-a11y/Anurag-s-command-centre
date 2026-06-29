@@ -8,12 +8,23 @@ import { Analytics } from "./components/Analytics";
 import { Pacing } from "./components/Pacing";
 import { Settings } from "./components/Settings";
 
+// Firebase integration imports
+import { auth, db } from "./lib/firebase";
+import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { AuthModal } from "./components/AuthModal";
+
 // Key to store app state in localStorage
 const LOCAL_STORAGE_KEY = "anurag_planner_v2";
 
 export default function App() {
   const [activeTab, setActiveSubjectTab] = React.useState<string>("dashboard");
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+  // Authentication & cloud sync state
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
+  const [syncing, setSyncing] = React.useState<boolean>(false);
+  const [authModalOpen, setAuthModalOpen] = React.useState<boolean>(false);
 
   // Initialize planner state
   const [state, setState] = React.useState<PlannerState>(() => {
@@ -56,10 +67,93 @@ export default function App() {
   // Schedule timeline (24 weeks starting from June 21, 2026)
   const schedule = React.useMemo(() => generateWeeklySchedule("2026-06-21"), []);
 
+  // Firebase Firestore cloud syncing helper
+  const syncToFirebase = async (nextState: PlannerState, user: User | null) => {
+    if (!user) return;
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        chapters: nextState.chapters,
+        tasks: nextState.tasks,
+        streak: nextState.streak,
+        lastStudyDate: nextState.lastStudyDate,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error("Error syncing to Firestore:", err);
+    }
+  };
+
+  // Listen to Auth State Changes
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        setSyncing(true);
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(userRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data() as any;
+            if (data && data.chapters) {
+              const cloudState: PlannerState = {
+                chapters: data.chapters,
+                tasks: data.tasks || {},
+                streak: data.streak || 0,
+                lastStudyDate: data.lastStudyDate || ""
+              };
+              setState(cloudState);
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cloudState));
+            }
+          } else {
+            // First time login, back up local storage state to Firestore
+            let localData = state;
+            try {
+              const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === "object" && parsed.chapters) {
+                  localData = parsed;
+                }
+              }
+            } catch (err) {}
+            await setDoc(userRef, {
+              chapters: localData.chapters,
+              tasks: localData.tasks,
+              streak: localData.streak,
+              lastStudyDate: localData.lastStudyDate,
+              updatedAt: new Date().toISOString()
+            });
+          }
+        } catch (err) {
+          console.error("Failed to fetch cloud sync data:", err);
+        } finally {
+          setSyncing(false);
+        }
+      } else {
+        // Logged out, load from localStorage
+        try {
+          const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object" && parsed.chapters) {
+              setState(parsed);
+            }
+          }
+        } catch (err) {}
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Update localStorage helper
   const saveState = (next: PlannerState) => {
     setState(next);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(next));
+    if (auth.currentUser) {
+      syncToFirebase(next, auth.currentUser);
+    }
   };
 
   // State Updaters
@@ -377,6 +471,35 @@ export default function App() {
               <span className="text-sm font-black text-white">{state.streak}</span>
             </div>
 
+            {/* Cloud Sync Status/Action */}
+            {currentUser ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex flex-col text-right">
+                  <span className="text-[10px] leading-none text-emerald-400 font-bold flex items-center justify-end gap-1">
+                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                    Synced
+                  </span>
+                  <span className="text-[11px] leading-none text-slate-300 mt-0.5 truncate max-w-[80px]" title={currentUser.email || ""}>
+                    {currentUser.email?.split("@")[0]}
+                  </span>
+                </div>
+                <button
+                  onClick={() => signOut(auth)}
+                  className="btn-3d btn-ghost px-2.5 py-1.5 text-xs rounded-lg flex items-center gap-1 text-slate-400 hover:text-rose-400 transition-all cursor-pointer"
+                  title={`Sign Out (${currentUser.email})`}
+                >
+                  🚪 <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="btn-3d btn-primary px-3 py-1.5 text-xs rounded-lg flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(108,99,255,0.4)]"
+              >
+                ☁️ <span>Sync Cloud</span>
+              </button>
+            )}
+
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -550,6 +673,8 @@ export default function App() {
           }}
         />
       </div>
+
+      <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
     </div>
   );
 }

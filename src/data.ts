@@ -121,39 +121,34 @@ export function generateWeeklySchedule(startDateStr: string): DaySchedule[] {
             subject: "physics",
             blockType: isHybrid ? "revision" : "study",
             lecturesPlanned: physicsLectures,
-            timeSlot: "Block 1: 6:00 AM – 8:00 AM"
+            timeSlot: "Block 1"
           });
+          blocks.push({
+            id: `${dateStr}-math`,
+            label: "Math",
+            subject: "math",
+            blockType: isHybrid ? "revision" : "study",
+            lecturesPlanned: (phase === 1 || isHybrid) ? 1 : 2,
+            timeSlot: "Block 2"
+          });
+        } else {
+          // Day B schedule (Chemistry + Math)
           blocks.push({
             id: `${dateStr}-chem`,
             label: "Chemistry",
             subject: "chemistry",
             blockType: isHybrid ? "revision" : "study",
             lecturesPlanned: 1,
-            timeSlot: "Block 2: 12:00 PM – 2:00 PM"
+            timeSlot: "Block 1"
           });
-        } else {
-          // Day B schedule (Math + Language)
-          const mathLectures = (phase === 1 || isHybrid) ? 1 : 2;
           blocks.push({
             id: `${dateStr}-math`,
             label: "Math",
             subject: "math",
             blockType: isHybrid ? "revision" : "study",
-            lecturesPlanned: mathLectures,
-            timeSlot: "Block 1: 6:00 AM – 8:00 AM"
+            lecturesPlanned: (phase === 1 || isHybrid) ? 1 : 2,
+            timeSlot: "Block 2"
           });
-          // Language is added in Block 2 in Phase 2
-          if (phase === 2) {
-            const isEnglishWeek = week % 2 === 1;
-            blocks.push({
-              id: `${dateStr}-lang`,
-              label: isEnglishWeek ? "English" : "Hindi",
-              subject: isEnglishWeek ? "english" : "hindi",
-              blockType: "language",
-              lecturesPlanned: 1,
-              timeSlot: "Block 2: 12:00 PM – 12:45 PM"
-            });
-          }
         }
 
         schedule.push({

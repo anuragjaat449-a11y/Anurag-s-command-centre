@@ -13,10 +13,10 @@ export const Pacing: React.FC<PacingProps> = ({
   getSubjectProgress,
   getOverallProgress
 }) => {
-  const targetDate = new Date("2025-12-07");
+  const targetDate = new Date("2026-12-06");
   const today = new Date();
   
-  // Calculate days/weeks left to Dec 7, 2025
+  // Calculate days/weeks left to Dec 6, 2026
   const daysLeft = Math.max(0, Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
   const weeksLeft = Math.max(0, Math.ceil(daysLeft / 7));
 
@@ -60,7 +60,7 @@ export const Pacing: React.FC<PacingProps> = ({
       <div>
         <h1 className="text-2xl font-bold text-white tracking-tight">🗓️ Pacing & Deadline Guide</h1>
         <p className="text-sm mt-1 text-slate-400">
-          Real-time countdown and chapter-by-chapter pacing targets to finish by Dec 7, 2025
+          Real-time countdown and chapter-by-chapter pacing targets to finish by Dec 6, 2026
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export const Pacing: React.FC<PacingProps> = ({
             <p className="text-sm mt-1 text-slate-400">
               {isOnTrack
                 ? `You have completed ${overall.pct}% of the syllabus, which is ahead of the time-elapsed estimate (${timeElapsedPct}%). Keep up the great pace!`
-                : `You need to accelerate. Target completing ${lecPerStudyDay} lectures per study day to finish the remainder by December 7, 2025.`}
+                : `You need to accelerate. Target completing ${lecPerStudyDay} lectures per study day to finish the remainder by December 6, 2026.`}
             </p>
           </div>
           <div className="text-right">

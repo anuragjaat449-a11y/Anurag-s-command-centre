@@ -58,7 +58,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             Command Center
           </h1>
           <p className="text-sm mt-1 text-slate-400">
-            Anurag Singh Indoliya · Class 12 PCM · Target: December 2025
+            Anurag Singh Indoliya · Class 12 PCM · Target: December 2026
           </p>
         </div>
         <div className="flex items-center gap-3">
