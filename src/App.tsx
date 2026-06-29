@@ -326,14 +326,15 @@ export default function App() {
       >
         <div className="max-w-screen-2xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-shrink-0">
-            <div
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-700 flex items-center justify-center text-sm font-black text-white"
+            <img
+              src="/src/assets/images/command_center_logo_1782709278192.jpg"
+              alt="Anurag's PCM Command Logo"
+              className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/50"
               style={{
-                boxShadow: "0 3px 0 #3a2fd4, 0 4px 15px rgba(108, 99, 255, 0.4)"
+                boxShadow: "0 0 15px rgba(108, 99, 255, 0.6)"
               }}
-            >
-              AS
-            </div>
+              referrerPolicy="no-referrer"
+            />
             <div>
               <div className="text-sm font-black text-white leading-none">Anurag's</div>
               <div className="text-[10px] leading-none text-indigo-400 font-bold tracking-wider">

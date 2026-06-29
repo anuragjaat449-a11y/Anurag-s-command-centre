@@ -45,8 +45,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* Header and Streak Banner */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-            🎯 Command Center
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            <img
+              src="/src/assets/images/command_center_logo_1782709278192.jpg"
+              alt="Logo"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-indigo-500/40"
+              style={{
+                boxShadow: "0 0 12px rgba(108, 99, 255, 0.4)"
+              }}
+              referrerPolicy="no-referrer"
+            />
+            Command Center
           </h1>
           <p className="text-sm mt-1 text-slate-400">
             Anurag Singh Indoliya · Class 12 PCM · Target: December 2025

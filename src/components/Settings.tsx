@@ -61,14 +61,15 @@ export const Settings: React.FC<SettingsProps> = ({
       <div className="card-3d p-6 relative overflow-hidden shimmer">
         <div className="absolute inset-0 star-grid opacity-20 pointer-events-none" />
         <div className="relative flex items-center gap-5">
-          <div
-            className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-700 flex items-center justify-center text-3xl font-bold text-white"
+          <img
+            src="/src/assets/images/command_center_logo_1782709278192.jpg"
+            alt="Anurag's PCM Command Logo"
+            className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/50 animate-pulse"
             style={{
-              boxShadow: "0 4px 0 #3a2fd4, 0 8px 30px rgba(108,99,255,0.4)"
+              boxShadow: "0 0 20px rgba(108, 99, 255, 0.5)"
             }}
-          >
-            AS
-          </div>
+            referrerPolicy="no-referrer"
+          />
           <div>
             <h2 className="text-xl font-black text-white">Anurag Singh Indoliya</h2>
             <div className="text-sm mt-0.5 text-slate-400">Class 12 PCM Student</div>
