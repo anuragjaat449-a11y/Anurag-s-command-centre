@@ -1,0 +1,6 @@
+{
+  "name": "PCM Command Center",
+  "description": "An interactive 24-week academic study planner designed for Class 12 PCM students to track lectures, complete tests, manage pacing, and log streaks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
