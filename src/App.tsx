@@ -9,9 +9,8 @@ import { Pacing } from "./components/Pacing";
 import { Settings } from "./components/Settings";
 
 // Firebase integration imports
-import { auth, db } from "./lib/firebase";
+import { auth } from "./lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { AuthModal } from "./components/AuthModal";
 
 // Key to store app state in localStorage
@@ -67,20 +66,26 @@ export default function App() {
   // Schedule timeline (24 weeks starting from June 21, 2026)
   const schedule = React.useMemo(() => generateWeeklySchedule("2026-06-21"), []);
 
-  // Firebase Firestore cloud syncing helper
-  const syncToFirebase = async (nextState: PlannerState, user: User | null) => {
+  // Netlify Database cloud syncing helper
+  const syncToDatabase = async (nextState: PlannerState, user: User | null) => {
     if (!user) return;
     try {
-      const userRef = doc(db, "users", user.uid);
-      await setDoc(userRef, {
-        chapters: nextState.chapters,
-        tasks: nextState.tasks,
-        streak: nextState.streak,
-        lastStudyDate: nextState.lastStudyDate,
-        updatedAt: new Date().toISOString()
+      const response = await fetch("/api/planner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.uid}`,
+        },
+        body: JSON.stringify({
+          email: user.email,
+          state: nextState,
+        }),
       });
+      if (!response.ok) {
+        throw new Error(`Sync failed with status: ${response.status}`);
+      }
     } catch (err) {
-      console.error("Error syncing to Firestore:", err);
+      console.error("Error syncing to Netlify Database:", err);
     }
   };
 
@@ -91,39 +96,46 @@ export default function App() {
       if (user) {
         setSyncing(true);
         try {
-          const userRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(userRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data() as any;
-            if (data && data.chapters) {
+          const response = await fetch("/api/planner", {
+            headers: {
+              "Authorization": `Bearer ${user.uid}`,
+            },
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.state && data.state.chapters) {
               const cloudState: PlannerState = {
-                chapters: data.chapters,
-                tasks: data.tasks || {},
-                streak: data.streak || 0,
-                lastStudyDate: data.lastStudyDate || ""
+                chapters: data.state.chapters,
+                tasks: data.state.tasks || {},
+                streak: data.state.streak || 0,
+                lastStudyDate: data.state.lastStudyDate || ""
               };
               setState(cloudState);
               localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cloudState));
-            }
-          } else {
-            // First time login, back up local storage state to Firestore
-            let localData = state;
-            try {
-              const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-              if (raw) {
-                const parsed = JSON.parse(raw);
-                if (parsed && typeof parsed === "object" && parsed.chapters) {
-                  localData = parsed;
+            } else {
+              // First time login, back up local storage state to Netlify Database
+              let localData = state;
+              try {
+                const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === "object" && parsed.chapters) {
+                    localData = parsed;
+                  }
                 }
-              }
-            } catch (err) {}
-            await setDoc(userRef, {
-              chapters: localData.chapters,
-              tasks: localData.tasks,
-              streak: localData.streak,
-              lastStudyDate: localData.lastStudyDate,
-              updatedAt: new Date().toISOString()
-            });
+              } catch (err) {}
+              await fetch("/api/planner", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${user.uid}`,
+                },
+                body: JSON.stringify({
+                  email: user.email,
+                  state: localData,
+                }),
+              });
+            }
           }
         } catch (err) {
           console.error("Failed to fetch cloud sync data:", err);
@@ -152,7 +164,7 @@ export default function App() {
     setState(next);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(next));
     if (auth.currentUser) {
-      syncToFirebase(next, auth.currentUser);
+      syncToDatabase(next, auth.currentUser);
     }
   };
 
